@@ -766,3 +766,18 @@ def test_spec_links_whitespace(url):
     content = b"<link rel=help href='%s'>" % url
     s = create("foo/test.html", content)
     assert s.spec_links == {"http://example.com/"}
+
+
+@pytest.mark.parametrize("fuzzy, expected", [
+    ("ref.html:1;200", {("/foo/test.html", "/foo/ref.html", "=="): [[1,1], [200, 200]]}),
+    ("ref.html:0-1;100-200", {("/foo/test.html", "/foo/ref.html", "=="): [[0,1], [100, 200]]}),
+    ("0-1;100-200", {None: [[0,1], [100, 200]]})])
+def test_reftest_fuzzy(fuzzy, expected):
+    content = b"""<link rel=match href=ref.html>
+<meta name=fuzzy content="%s">
+""" % fuzzy
+
+    s = create("foo/test.html", content)
+
+    assert s.content_is_ref_node
+    assert s.fuzzy == expected
