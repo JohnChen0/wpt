@@ -1,5 +1,13 @@
 (function() {
   let sourceNameIdx = 0;
+  const ButtonType = {
+    LEFT: 0,
+    MIDDLE: 1,
+    RIGHT: 2,
+    BACK: 3,
+    FORWARD: 4,
+  };
+
 
   /**
    * Builder for creating a sequence of actions
@@ -98,7 +106,7 @@
      * @returns {Actions}
      */
     addKeyboard: function(name, set=true) {
-      this.createSource("key", name, true);
+      this.createSource("key", name);
       if (set) {
         this.setKeyboard(name);
       }
@@ -125,7 +133,7 @@
      * @returns {Actions}
      */
     addPointer: function(name, pointerType="mouse", set=true) {
-      this.createSource("pointer", name, true, {pointerType: pointerType});
+      this.createSource("pointer", name, {pointerType: pointerType});
       if (set) {
         this.setPointer(name);
       }
@@ -225,9 +233,9 @@
      *                               pointer source
      * @returns {Actions}
      */
-    pointerDown: function({button=0, sourceName=null}={}) {
+    pointerDown: function(x, y, {origin="viewport", button=ButtonType.LEFT, sourceName=null}={}) {
       let source = this.getSource("pointer", sourceName);
-      source.pointerDown(this, button);
+      source.pointerDown(this, button, x, y, origin);
       return this;
     },
 
@@ -239,7 +247,7 @@
      *                               source
      * @returns {Actions}
      */
-    pointerUp: function({button=0, sourceName=null}={}) {
+    pointerUp: function({button=ButtonType.LEFT, sourceName=null}={}) {
       let source = this.getSource("pointer", sourceName);
       source.pointerUp(this, button);
       return this;
@@ -359,12 +367,12 @@
       return data;
     },
 
-    pointerDown: function(actions, button) {
+    pointerDown: function(actions, button, x, y, origin) {
       let tick = actions.tickIdx;
       if (this.actions.has(tick)) {
         tick = actions.addTick().tickIdx;
       }
-      this.actions.set(tick, {type: "pointerDown", button});
+      this.actions.set(tick, {type: "pointerDown", button, x, y, origin});
     },
 
     pointerUp: function(actions, button) {
